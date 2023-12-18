@@ -4,7 +4,7 @@ import scipy.linalg as la
 from numpy.random import RandomState
 from scipy import signal
 
-from scipy import fft, optimize
+from scipy import optimize
 import matplotlib.pyplot as plt
 
 # Parameters 设置参数
@@ -62,9 +62,9 @@ else:
 
 # 计算逆核函数
 def compute_inverse_kernel(w, N):
-    Fw = fft.fft(w, N)
+    Fw = np.fft.fft(w, N)
     inverse_Fw = 1 / np.where(Fw != 0, Fw, 1)
-    return np.real(fft.ifft(inverse_Fw))
+    return np.real(np.fft.ifft(inverse_Fw))
 
 # 计算逆核 w^-1
 w_inverse = compute_inverse_kernel(w_optimal, N)
