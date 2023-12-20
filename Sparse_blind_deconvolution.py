@@ -152,18 +152,3 @@ plt.title('Fig5.MSE and NMSE Over Iterations')
 plt.tight_layout()
 plt.show()
 plt.savefig('Fig5.MSE_and_NMSE_Over_Iterations.jpg')
-
-
-# 计算信号 x 的均方误差 (MSE)
-# 注意：x_optimal 可能需要被截断或填充以与 x_true 的长度匹配
-length_difference = len(x_true) - len(x_optimal)
-if length_difference > 0:
-    x_optimal_padded = np.append(x_optimal, np.zeros(length_difference))
-elif length_difference < 0:
-    x_optimal_padded = x_optimal[:length_difference]
-else:
-    x_optimal_padded = x_optimal
-
-mse_x = np.mean((x_optimal_padded - x_true) ** 2)
-
-print(mse_x)
