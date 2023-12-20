@@ -81,7 +81,6 @@ else:
     w_optimal = x_optimal = None
     print("False", result.message)
 
-
 # 计算逆核函数
 def compute_inverse_kernel(w, N):
     Fw = np.fft.fft(w, N)
