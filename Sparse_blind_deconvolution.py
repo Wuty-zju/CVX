@@ -8,6 +8,16 @@ w^(-1) = F^(-1)(1/F(w)),
 where F is discrete Fourier transform at length N = T + k and F^(-1) is its inverse transform. In this interpretation, we can say that we have decomposed the signal into the convolution of a sparse signal x and a signal with short (k-long) inverse, w^(-1).
 Carry out blind deconvolution on the signal given in blind_deconv_data.*. This file also defines the kernel length k. Plot optimal w and x, and also the given observation y. Also plot the inverse kernel w^(-1), use the function inverse_ker that we provided in blind_deconv_data.*.
 Hint. The function conv(w, y) is overloaded to work with CVX*.
+
+15.15 稀疏盲反卷积。我们得到了一个时间序列观察 y ∈ R^T,并寻求一个滤波器(卷积核)w ∈ R^k,使得卷积 x = w * y ∈ R^(T + k - 1) 在截断前后 k - 1 项后变得稀疏，即 x_k:T = (x_k, x_k+1, ..., x_T) 是稀疏的。这里 * 表示卷积，
+x_i = Σ w_j y_i-j, i = 1,...,T + k - 1, j = 1,
+其中我们假设 y_t = 0 对于 t ≤ 0。通常我们有 k ≪ T。
+作为 x 稀疏性的凸替代，我们最小化其 l1-范数，||x||_1。为了排除平凡解 w = 0,我们通过施加约束 w_1 = 1 来规范化 w。
+解释。（这些不是解决问题所必需的。）在信号处理方言中，我们可以说 w 是一个滤波器，当应用于信号 y 时，会得到 x,一个更简单、稀疏的信号。作为第二种解释，我们可以说 y = w^(-1) * x,其中 w^(-1) 是 w 的卷积逆，定义为
+w^(-1) = F^(-1)(1/F(w)),
+其中 F 是长度为 N = T + k 的离散傅立叶变换,F^(-1) 是其逆变换。在这种解释中，我们可以说我们已经将信号分解成稀疏信号 x 和具有短(k 长）逆的信号 w^(-1) 的卷积。
+对 blind_deconv_data.* 中给出的信号执行盲反卷积。这个文件还定义了核长度 k。绘制最佳 w 和 x,以及给定的观测 y。还要绘制逆核 w^(-1)，使用我们在 blind_deconv_data.* 中提供的 inverse_ker 函数。
+提示。函数 conv(w, y) 已重载以适用于 CVX*。
 """
 
 # 导入所需的库
