@@ -1,9 +1,20 @@
+"""
+15.15 Sparse blind deconvolution. We are given a time series observation y ∈ R^T, and seek a filter (convolution kernel) w ∈ R^k, so that the convolution x = w * y ∈ R^(T + k - 1) is sparse after truncating the first and last k - 1 entries, i.e., x_k:T = (x_k, x_k+1, ..., x_T) is sparse. Here * denotes convolution,
+x_i = Σ w_j y_i-j, i = 1,...,T + k - 1, j = 1
+where we assume that y_t = 0 for t ≤ 0. Typically we have k ≪ T.
+As a convex surrogate for sparsity of x, we minimize its l1-norm, ||x||_1. To preclude the trivial solution w = 0, we normalize w by imposing the constraint w_1 = 1.
+Interpretations. (These are not needed to solve the problem.) In signal processing dialect, we can say that w is a filter which, when applied to the signal y, results in x, a simpler, sparse signal. As a second interpretation, we can say that y = w^(-1) * x, where w^(-1) is the convolution inverse of w, defined as
+w^(-1) = F^(-1)(1/F(w)),
+where F is discrete Fourier transform at length N = T + k and F^(-1) is its inverse transform. In this interpretation, we can say that we have decomposed the signal into the convolution of a sparse signal x and a signal with short (k-long) inverse, w^(-1).
+Carry out blind deconvolution on the signal given in blind_deconv_data.*. This file also defines the kernel length k. Plot optimal w and x, and also the given observation y. Also plot the inverse kernel w^(-1), use the function inverse_ker that we provided in blind_deconv_data.*.
+Hint. The function conv(w, y) is overloaded to work with CVX*.
+"""
+
 # 导入所需的库
 import numpy as np
 import scipy.linalg as la
 from numpy.random import RandomState
 from scipy import signal
-
 from scipy import optimize
 import matplotlib.pyplot as plt
 
@@ -33,6 +44,8 @@ y = y_true[k:T+k] + sigma * rn.randn(T)           # 添加噪声生成最终的�
 def inverse_ker(w, len=N):
     w_inv = np.real(np.fft.ifft(1/np.fft.fft(w, len), len))
     return w_inv
+# blind_deconv_data.py 信号生成函数此
+
 
 # 定义用于优化的 l1 范数函数
 def l1_norm(w, y, T, k):
@@ -44,10 +57,20 @@ def l1_norm(w, y, T, k):
 constraint = {'type': 'eq', 'fun': lambda w: np.sum(w) - 1}
 
 # 随机初始化 w
-w_initial = np.random.rand(k)
+w_initial = np.random.RandomState(1).rand(k)
+
+# 使用回调函数来计算并存储每一步的 MSE/NMSE
+mse_values = []
+nmse_values = []
+
+def callback(w):
+    mse = np.mean((w - w_true) ** 2)
+    nmse = np.linalg.norm(w - w_true) ** 2 / np.linalg.norm(w_true) ** 2
+    mse_values.append(mse)
+    nmse_values.append(nmse)
 
 # 使用 optimize.minimize 函数解优化问题
-result = optimize.minimize(l1_norm, w_initial, args=(y, T, k), constraints=constraint, method='SLSQP')
+result = optimize.minimize(l1_norm, w_initial, args=(y, T, k), constraints=constraint, method='SLSQP', callback=callback)
 
 # 检查优化结果
 if result.success:
@@ -57,7 +80,6 @@ if result.success:
 else:
     w_optimal = x_optimal = None
     print("False", result.message)
-
 
 
 # 计算逆核函数
@@ -70,43 +92,67 @@ def compute_inverse_kernel(w, N):
 w_inverse = compute_inverse_kernel(w_optimal, N)
 
 # 绘制结果图
-plt.figure(figsize=(24, 20))
-
 # 绘制最优滤波器 w
-plt.subplot(4, 1, 1)
+plt.figure(figsize=(24, 5))
 plt.stem(w_optimal)
-plt.title('Optimal Filter w')
+plt.title('Fig1.Optimal Filter w')
 plt.xlabel('Index')
 plt.ylabel('Amplitude')
-
-# 绘制稀疏信号 x
-plt.subplot(4, 1, 2)
-plt.plot(x_optimal)
-plt.title('Sparse Signal x')
-plt.xlabel('Time')
-plt.ylabel('Amplitude')
-
-# 绘制观测 y
-plt.subplot(4, 1, 3)
-plt.plot(y)
-plt.title('Observation y')
-plt.xlabel('Time')
-plt.ylabel('Amplitude')
-
-# 绘制逆核 w^-1
-plt.subplot(4, 1, 4)
-plt.stem(w_inverse)
-plt.title('Inverse Kernel w^-1')
-plt.xlabel('Index')
-plt.ylabel('Amplitude')
-
 plt.tight_layout()
 plt.show()
-plt.savefig('results.jpg')
+plt.savefig('Fig1.Optimal Filter w.jpg')
 
+# 绘制稀疏信号 x
+plt.figure(figsize=(24, 5))
+plt.plot(x_optimal)
+plt.title('Fig2.Sparse Signal x')
+plt.xlabel('Time')
+plt.ylabel('Amplitude')
+plt.tight_layout()
+plt.show()
+plt.savefig('Fig2.Sparse Signal x.jpg')
 
-# 计算滤波器 w 的均方误差 (MSE)
-mse_w = np.mean((w_optimal - w_true) ** 2)
+# 绘制观测 y
+plt.figure(figsize=(24, 5))
+plt.plot(y)
+plt.title('Fig3.Observation y')
+plt.xlabel('Time')
+plt.ylabel('Amplitude')
+plt.tight_layout()
+plt.show()
+plt.savefig('Fig3.Observation y.jpg')
+
+# 绘制逆核 w^-1
+plt.figure(figsize=(24, 5))
+plt.stem(w_inverse)
+plt.title('Fig4.Inverse Kernel w^-1')
+plt.xlabel('Index')
+plt.ylabel('Amplitude')
+plt.tight_layout()
+plt.show()
+plt.savefig('Fig4.Inverse Kernel w^-1.jpg')
+
+# 绘制 NMSE 图像
+plt.figure(figsize=(24, 5))
+# 创建一个坐标轴 MSE
+ax1 = plt.gca()
+ax1.plot(mse_values, label='MSE')
+ax1.set_xlabel('Iteration')
+ax1.set_ylabel('MSE')
+ax1.tick_params('y')
+# 创建另一个坐标轴 NMSE，共享同一个 X 轴
+ax2 = ax1.twinx()
+ax2.semilogy(nmse_values, 'r--', label='NMSE (log scale)')  # 'r--' 表示红色虚线
+ax2.set_ylabel('NMSE (log scale)')
+ax2.tick_params('y')
+# 添加图例和标题
+ax1.legend(loc='upper left')
+ax2.legend(loc='upper right')
+plt.title('Fig5.MSE and NMSE Over Iterations')
+plt.tight_layout()
+plt.show()
+plt.savefig('Fig5.MSE_and_NMSE_Over_Iterations.jpg')
+
 
 # 计算信号 x 的均方误差 (MSE)
 # 注意：x_optimal 可能需要被截断或填充以与 x_true 的长度匹配
@@ -120,4 +166,4 @@ else:
 
 mse_x = np.mean((x_optimal_padded - x_true) ** 2)
 
-print(mse_w, mse_x)
+print(mse_x)
