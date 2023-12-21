@@ -27,6 +27,8 @@ from numpy.random import RandomState
 from scipy import signal
 from scipy import optimize
 import matplotlib.pyplot as plt
+import os
+import pandas as pd
 
 # Parameters 设置参数
 T = 400        # 时间序列的长度
@@ -54,7 +56,7 @@ y = y_true[k:T+k] + sigma * rn.randn(T)           # 添加噪声生成最终的�
 def inverse_ker(w, len=N):
     w_inv = np.real(np.fft.ifft(1/np.fft.fft(w, len), len))
     return w_inv
-# blind_deconv_data.py 信号生成函数此
+# blind_deconv_data.py 信号生成函数文件部分到此结束
 
 
 # 定义用于优化的 l1 范数函数
@@ -101,59 +103,42 @@ def compute_inverse_kernel(w, N):
 # 计算逆核 w^-1
 w_inverse = compute_inverse_kernel(w_optimal, N)
 
-# 绘制结果图
-# 绘制最优滤波器 w
-plt.figure(figsize=(24, 5))
-plt.stem(w_optimal)
-plt.title('Fig1.Optimal Filter w')
-plt.xlabel('Index')
-plt.ylabel('Amplitude')
-plt.tight_layout()
-plt.savefig('Fig1.Optimal Filter w.jpg')
+# 绘制结果图并输出 CSV
+def plot_and_save_with_csv(data, title, xlabel, ylabel, output_folder_path, fig_size=(24, 5), plot_type='plot'):
+    # 确保输出文件夹存在
+    if not os.path.exists(output_folder_path):
+        os.makedirs(output_folder_path)
+    
+    # 绘制图像
+    plt.figure(figsize=fig_size)
+    if plot_type == 'plot':
+        plt.plot(data)
+    elif plot_type == 'stem':
+        plt.stem(data)
+    
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.tight_layout()
+    
+    # 保存图像
+    safe_title = title.replace(' ', '_').replace('.', '').replace('-', '_')  # 替换标题中的非法文件名字符
+    image_file_name = f"{safe_title}.jpg"
+    plt.savefig(os.path.join(output_folder_path, image_file_name))
+    plt.show()
 
-# 绘制稀疏信号 x
-plt.figure(figsize=(24, 5))
-plt.plot(x_optimal)
-plt.title('Fig2.Sparse Signal x')
-plt.xlabel('Time')
-plt.ylabel('Amplitude')
-plt.tight_layout()
-plt.savefig('Fig2.Sparse Signal x.jpg')
+    # 保存数据到 CSV
+    csv_file_name = f"{safe_title}.csv"
+    pd.DataFrame(data).to_csv(os.path.join(output_folder_path, csv_file_name), index=False, header=True)
 
-# 绘制观测 y
-plt.figure(figsize=(24, 5))
-plt.plot(y)
-plt.title('Fig3.Observation y')
-plt.xlabel('Time')
-plt.ylabel('Amplitude')
-plt.tight_layout()
-plt.savefig('Fig3.Observation y.jpg')
+# 设置输出路径
+results_output_folder_path = 'Sparse_blind_deconvolution/results'   # 输出题目要求的 results 路径
+error_output_folder_path = 'Sparse_blind_deconvolution/errors'   # 输出误差随迭代次数 errors 路径
 
-# 绘制逆核 w^-1
-plt.figure(figsize=(24, 5))
-plt.stem(w_inverse)
-plt.title('Fig4.Inverse Kernel w^-1')
-plt.xlabel('Index')
-plt.ylabel('Amplitude')
-plt.tight_layout()
-plt.savefig('Fig4.Inverse Kernel w^-1.jpg')
-
-# 绘制 NMSE 图像
-plt.figure(figsize=(24, 5))
-# 创建一个坐标轴 MSE
-ax1 = plt.gca()
-ax1.plot(mse_values, label='MSE')
-ax1.set_xlabel('Iteration')
-ax1.set_ylabel('MSE')
-ax1.tick_params('y')
-# 创建另一个坐标轴 NMSE，共享同一个 X 轴
-ax2 = ax1.twinx()
-ax2.semilogy(nmse_values, 'r--', label='NMSE (log scale)')  # 'r--' 表示红色虚线
-ax2.set_ylabel('NMSE (log scale)')
-ax2.tick_params('y')
-# 添加图例和标题
-ax1.legend(loc='upper left')
-ax2.legend(loc='upper right')
-plt.title('Fig5.MSE and NMSE Over Iterations')
-plt.tight_layout()
-plt.savefig('Fig5.MSE_and_NMSE_Over_Iterations.jpg')
+# 设置输出参数
+plot_and_save_with_csv(w_optimal, 'Optimal Filter w', 'Index', 'Amplitude', results_output_folder_path, plot_type='stem')    # 绘制最优滤波器 w
+plot_and_save_with_csv(x_optimal, 'Sparse Signal x', 'Time', 'Amplitude', results_output_folder_path)    # 绘制稀疏信号 x
+plot_and_save_with_csv(y, 'Observation y', 'Time', 'Amplitude', results_output_folder_path)      # 绘制观测 y
+plot_and_save_with_csv(w_inverse, 'Inverse Kernel w^-1', 'Index', 'Amplitude', results_output_folder_path, plot_type='stem')     # 绘制逆核 w^-1
+plot_and_save_with_csv(mse_values, 'MSE Over Iterations', 'Iteration', 'MSE', error_output_folder_path)  # 绘制 MSE
+plot_and_save_with_csv(nmse_values, 'NMSE Over Iterations', 'Iteration', 'NMSE', error_output_folder_path)   # 绘制 NMSE
