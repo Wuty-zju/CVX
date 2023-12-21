@@ -86,7 +86,8 @@ result = optimize.minimize(l1_norm, w_initial, args=(y, T, k), constraints=const
 if result.success:
     w_optimal = result.x  # 获取最优滤波器
     x_optimal = signal.convolve(w_optimal, y, mode='full')[k-1:T]  # 通过卷积得到稀疏信号
-    print("Success", '\n', result.message, '\n', "w_optimal", '\n', w_optimal[:], '\n', "x_optimal", '\n', x_optimal[:])  # 显示 w_optimal 和 x_optimal
+    print("Success", '\n', result.message)
+    print("w_optimal", '\n', w_optimal[:], '\n', "x_optimal", '\n', x_optimal[:])  # 显示 w_optimal 和 x_optimal
 else:
     w_optimal = x_optimal = None
     print("False", result.message)
@@ -108,7 +109,6 @@ plt.title('Fig1.Optimal Filter w')
 plt.xlabel('Index')
 plt.ylabel('Amplitude')
 plt.tight_layout()
-plt.show()
 plt.savefig('Fig1.Optimal Filter w.jpg')
 
 # 绘制稀疏信号 x
@@ -118,7 +118,6 @@ plt.title('Fig2.Sparse Signal x')
 plt.xlabel('Time')
 plt.ylabel('Amplitude')
 plt.tight_layout()
-plt.show()
 plt.savefig('Fig2.Sparse Signal x.jpg')
 
 # 绘制观测 y
@@ -128,7 +127,6 @@ plt.title('Fig3.Observation y')
 plt.xlabel('Time')
 plt.ylabel('Amplitude')
 plt.tight_layout()
-plt.show()
 plt.savefig('Fig3.Observation y.jpg')
 
 # 绘制逆核 w^-1
@@ -138,7 +136,6 @@ plt.title('Fig4.Inverse Kernel w^-1')
 plt.xlabel('Index')
 plt.ylabel('Amplitude')
 plt.tight_layout()
-plt.show()
 plt.savefig('Fig4.Inverse Kernel w^-1.jpg')
 
 # 绘制 NMSE 图像
@@ -159,5 +156,4 @@ ax1.legend(loc='upper left')
 ax2.legend(loc='upper right')
 plt.title('Fig5.MSE and NMSE Over Iterations')
 plt.tight_layout()
-plt.show()
 plt.savefig('Fig5.MSE_and_NMSE_Over_Iterations.jpg')
