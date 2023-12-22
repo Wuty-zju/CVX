@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import os
 
@@ -45,7 +46,12 @@ def plot_and_save_with_csv(y1_data, title, xlabel, ylabel, output_folder_path, f
     # 合并数据并保存到 CSV
     csv_file_name = f"{safe_title}.csv"
     if y2_data is not None:
+        # 确保数据是列表格式，即使只有一个元素
+        y1_data = [y1_data] if np.isscalar(y1_data) else y1_data
+        y2_data = [y2_data] if np.isscalar(y2_data) else y2_data
         combined_data = pd.DataFrame({legend1: y1_data, legend2: y2_data})
     else:
+        y1_data = [y1_data] if np.isscalar(y1_data) else y1_data
         combined_data = pd.DataFrame({legend1: y1_data})
     combined_data.to_csv(os.path.join(output_folder_path, csv_file_name), index=False, header=True)
+
