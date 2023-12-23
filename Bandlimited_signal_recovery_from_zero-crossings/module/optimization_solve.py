@@ -21,6 +21,6 @@ def optimization_solve(n, f_min, B, s, y):
 
     # RRMS（Relative Root Mean Square Error）误差计算
     RRMS = np.linalg.norm(y - y_recovered) / np.linalg.norm(y)
-    print('Recovery error', RRMS)
+    print('Optimize Success')
 
     return y_recovered, RRMS
