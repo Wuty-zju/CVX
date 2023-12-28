@@ -3,7 +3,7 @@ from scipy import optimize
 from scipy import signal
 
 # 优化算法的代码
-def optimize_filter(w_true, y, T, k):
+def optimization_solve(w_true, y, T, k):
     # 定义用于优化的 l1 范数函数
     def l1_norm(w, y, T, k):
         x = signal.convolve(w, y, mode='full')

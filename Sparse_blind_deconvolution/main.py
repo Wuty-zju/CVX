@@ -1,13 +1,13 @@
 import os
 from module.blind_deconv_data import generate_waveform, inverse_ker
-from module.optimization_algorithm import optimize_filter
+from Sparse_blind_deconvolution.module.optimization_solve import optimization_solve
 from module.results_output import plot_and_save_with_csv
 
 # 生成波形
 w_true, y, T, k, N = generate_waveform()
 
 # 优化求解
-w_optimal, x_optimal, mse_values, nmse_values = optimize_filter(w_true, y, T, k)
+w_optimal, x_optimal, mse_values, nmse_values = optimization_solve(w_true, y, T, k)
 
 # 计算逆核
 w_inverse = inverse_ker(w_optimal, N)
