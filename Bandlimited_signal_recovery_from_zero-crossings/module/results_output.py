@@ -14,7 +14,7 @@ def plot_and_save_with_csv(y1_data, title, xlabel, ylabel, output_folder_path, f
     if plot_type == 'plot':
         ax1.plot(y1_data, color='tab:blue', label=legend1)
     elif plot_type == 'stem':
-        ax1.stem(y1_data, linefmt='tab:blue', markerfmt='bo', label=legend1)
+        ax1.stem(y1_data, linefmt='tab:blue', label=legend1)
 
     ax1.set_xlabel(xlabel)
     ax1.set_ylabel(ylabel)

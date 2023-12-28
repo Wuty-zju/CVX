@@ -14,5 +14,5 @@ error_output_folder_path = os.path.join(current_dir, 'outputs/errors')
 
 # 输出结果
 # 绘制原始信号y和估计信号y_recovered的图像
-plot_and_save_with_csv(y, 'original and recovered bandlimited signals', 'Sample Index', 'bandlimited signals', results_output_folder_path, fig_size=(24, 5), y2_data=y_recovered, y2_label='bandlimited signals', legend1='original', legend2='recovered')
-plot_and_save_with_csv(RRMS, 'RRMS Error', 'Iteration', 'Error', error_output_folder_path, fig_size=(24, 5))
+plot_and_save_with_csv(y, 'original and recovered bandlimited signals', 'Sample Index', 'bandlimited signals', results_output_folder_path, y2_data=y_recovered, y2_label='bandlimited signals', legend1='original', legend2='recovered')
+plot_and_save_with_csv(RRMS, 'RRMS Error', 'Iteration', 'Error', error_output_folder_path, legend1='RRMS')

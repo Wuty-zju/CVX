@@ -1,42 +1,38 @@
 import numpy as np
-from scipy import optimize
+import cvxpy as cp
 from scipy import signal
 
-# 优化算法的代码
+# 优化算法
 def optimization_solve(w_true, y, T, k):
-    # 定义用于优化的 l1 范数函数
-    def l1_norm(w, y, T, k):
-        x = signal.convolve(w, y, mode='full')
-        x_truncated = x[k-1:T]
-        return np.sum(np.abs(x_truncated))
+    # 定义优化变量
+    w = cp.Variable(k)
 
-    # 设置优化问题的约束条件
-    constraint = {'type': 'eq', 'fun': lambda w: np.sum(w) - 1}
+    # 构造卷积矩阵
+    Y = np.zeros((T, k))
+    for i in range(T):
+        Y[i, :min(i+1, k)] = y[max(0, i-k+1):i+1][::-1]
 
-    # 随机初始化 w
-    w_initial = np.random.RandomState(1).rand(k)
+    # 定义卷积操作
+    x = Y @ w
 
-    # 使用回调函数来计算并存储每一步的 MSE/NMSE
-    mse_values = []
-    nmse_values = []
+    # 目标函数：最小化 x 的 l1 范数
+    objective = cp.Minimize(cp.norm(x, 1))
 
-    def callback(w):
-        mse = np.mean((w - w_true) ** 2)
-        nmse = np.linalg.norm(w - w_true) ** 2 / np.linalg.norm(w_true) ** 2
-        mse_values.append(mse)
-        nmse_values.append(nmse)
+    # 约束条件：w 的第一个元素等于 1
+    constraints = [w[0] == 1]
 
-    # 使用 optimize.minimize 函数解优化问题
-    result = optimize.minimize(l1_norm, w_initial, args=(y, T, k), constraints=constraint, method='SLSQP', callback=callback)
+    # 定义并求解问题
+    problem = cp.Problem(objective, constraints)
+    problem.solve(solver=cp.ECOS)
 
-    # 检查优化结果
-    if result.success:
-        w_optimal = result.x
-        x_optimal = signal.convolve(w_optimal, y, mode='full')[k-1:T]
-        print("w_optimal", '\n', w_optimal[:], '\n', "x_optimal", '\n', x_optimal[:])
-        print("Success", '\n', result.message)
-    else:
-        w_optimal = x_optimal = None
-        print("False", result.message)
+    # 提取优化后的 w 和 x
+    w_optimal = w.value
+    x_optimal = Y @ w_optimal
 
-    return w_optimal, x_optimal, mse_values, nmse_values
+    # 误差计算
+    rmms = np.linalg.norm(w_optimal - w_true) / np.linalg.norm(w_true)      # RRMS（Relative Root Mean Square Error）误差计算
+    mse = np.mean((w_optimal - w_true) ** 2)        # 计算 MSE
+    nmse = np.linalg.norm(w_optimal - w_true) ** 2 / np.linalg.norm(w_true) ** 2        # 计算 NMSE
+    print('Optimize Success')
+
+    return w_optimal, x_optimal, rmms, mse, nmse
