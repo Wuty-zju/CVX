@@ -1,11 +1,11 @@
 import numpy as np
-import cvxpy as cp
+import cvxpy as cvx
 from scipy import signal
 
 # 优化算法
 def optimization_solve(w_true, y, T, k):
     # 定义优化变量
-    w = cp.Variable(k)
+    w = cvx.Variable(k)
 
     # 构造卷积矩阵
     Y = np.zeros((T, k))
@@ -16,14 +16,14 @@ def optimization_solve(w_true, y, T, k):
     x = Y @ w
 
     # 目标函数：最小化 x 的 l1 范数
-    objective = cp.Minimize(cp.norm(x, 1))
+    objective = cvx.Minimize(cvx.norm(x, 1))
 
     # 约束条件：w 的第一个元素等于 1
     constraints = [w[0] == 1]
 
     # 定义并求解问题
-    problem = cp.Problem(objective, constraints)
-    problem.solve(solver=cp.ECOS)
+    problem = cvx.Problem(objective, constraints)
+    problem.solve(solver=cvx.ECOS)
 
     # 提取优化后的 w 和 x
     w_optimal = w.value
@@ -36,3 +36,4 @@ def optimization_solve(w_true, y, T, k):
     print('Optimize Success')
 
     return w_optimal, x_optimal, rmms, mse, nmse
+

@@ -1,4 +1,3 @@
-# 导入所需的库
 import numpy as np
 import scipy.linalg as la
 from numpy.random import RandomState
